@@ -28,13 +28,13 @@ app.get('/tasks/:id', (req,res) => {
     const task = tasks.find(x=> x.id === taskId);
 
     if(!task){
-        res.send({ "error": `Task ${taskId} not found` });
+        return res.status(404).json({ "error": `Task ${taskId} not found` });
     }
     res.json(task);
 })
 
 app.post('/tasks', (req,res)=> {
-    if(!req.body.title){
+    if(!req.body.title || req.body.title.trim() === ""){
         return res.status(400).json({"error" : "The title is missing"});
     }
 
@@ -44,6 +44,31 @@ app.post('/tasks', (req,res)=> {
     tasks.push(task);
     res.status(201).json(task);
 });
+
+app.put('/tasks/:id', (req,res) => {
+    if(!req.body.title || req.body.title.trim() == "" || req.body.done == null){
+        return res.status(400).json({"error" : "The request is invalid"});
+    }
+    const taskId = parseInt(req.params.id,10);
+    const task = tasks.find(x=> x.id === taskId);
+    if(!task){
+        return res.status(404).json({"error" : "The task was not found"});
+    }
+    task.title = req.body.title;
+    task.done = req.body.done;
+    res.json(task);
+})
+
+app.delete('/tasks/:id', (req,res) => {
+    const taskId = parseInt(req.params.id,10);
+    let task = tasks.find(x=>x.id === taskId);
+    let index = tasks.findIndex(x=>x.id === taskId);
+    if(!task){
+        return res.status(404).json({"error" : "The task was not found"});
+    }
+    tasks.splice(index,1);
+    res.status(204).send();
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
