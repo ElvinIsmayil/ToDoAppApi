@@ -1,9 +1,12 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import openapiDocument from './openapi.json' with { type: 'json' };
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
 let tasks = [
   { id: 1, title: 'Learn Express essentials', done: true },
