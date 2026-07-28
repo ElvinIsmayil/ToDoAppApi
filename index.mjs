@@ -3,6 +3,8 @@ import express from 'express';
 const app = express();
 const port = 3000;
 
+app.use(express.json());
+
 let tasks = [
   { id: 1, title: 'Learn Express essentials', done: true },
   { id: 2, title: 'Build CRUD API assignment', done: false },
@@ -31,6 +33,19 @@ app.get('/tasks/:id', (req,res) => {
     res.json(task);
 })
 
+app.post('/tasks', (req,res)=> {
+    if(!req.body.title){
+        return res.status(400).json({"error" : "The title is missing"});
+    }
+
+    const taskId = tasks[tasks.length - 1].id + 1;
+    let task = {id : taskId, title: req.body.title, done: false};
+    
+    tasks.push(task);
+    res.status(201).json(task);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
