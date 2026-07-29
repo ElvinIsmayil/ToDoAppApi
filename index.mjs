@@ -23,8 +23,20 @@ app.get('/health' , (req,res) => {
 });
 
 app.get('/tasks' ,(req, res) => {
-    res.send(tasks);
+     const done = req.query.done;
+        const search = req.query.search;
+
+        if(done !== undefined){
+            const filteredTasks = tasks.filter(x=> x.done === (done === "true"));
+            return res.json(filteredTasks);
+        }
+        if(search){
+            const filteredTasks = tasks.filter(x=> x.title.includes(search));
+            return res.json(filteredTasks);
+        }
+    res.json(tasks);
 });
+
 
 app.get('/tasks/:id', (req,res) => {
     const taskId = parseInt(req.params.id, 10);
@@ -73,22 +85,6 @@ app.delete('/tasks/:id', (req,res) => {
     res.status(204).send();
 })
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-
-app.get('/tasks', (req, res)=>{
-    const done = req.query.done === "true";
-    const filteredTasks = tasks.filter(x=> x.done === done);
-    res.json(filteredTasks);
-})
-
-app.get('/tasks', (req,res) => {
-    const search = req.query.search;
-    const filteredTasks = tasks.filter(x=> x.title.includes(search));
-    res.json(filteredTasks);
-})
-
 app.get('/stats', (req,res)=>{
     const total = tasks.length;
     const done = tasks.filter(x=> x.done === true).length;
@@ -97,5 +93,10 @@ app.get('/stats', (req,res)=>{
     const response = {"total" : total, "done" : done, "open" : open};
     res.json(response);
 })
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);  
+});  
+
 
 

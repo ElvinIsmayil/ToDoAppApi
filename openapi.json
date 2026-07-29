@@ -45,9 +45,46 @@
         }
       }
     },
+    "/stats": {
+      "get": {
+        "summary": "Get task statistics",
+        "responses": {
+          "200": {
+            "description": "Task counts broken down by total, done, and open",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tasks": {
       "get": {
         "summary": "Get all tasks",
+        "parameters": [
+          {
+            "name": "done",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter tasks by completion status (e.g. true or false)"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search tasks containing a substring in the title"
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of tasks",
@@ -88,7 +125,7 @@
             }
           },
           "400": {
-            "description": "Missing title",
+            "description": "Missing or empty title",
             "content": {
               "application/json": {
                 "schema": {
@@ -155,6 +192,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body (missing title or done)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -237,6 +284,23 @@
           "status": {
             "type": "string",
             "example": "ok"
+          }
+        }
+      },
+      "Stats": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 3
+          },
+          "done": {
+            "type": "integer",
+            "example": 1
+          },
+          "open": {
+            "type": "integer",
+            "example": 2
           }
         }
       },

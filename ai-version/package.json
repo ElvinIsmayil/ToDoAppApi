@@ -1,0 +1,23 @@
+{
+  "name": "todo-api-ai-version",
+  "version": "1.0.0",
+  "description": "In-memory To Do List API built with Express.js and Swagger UI.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "express",
+    "todo",
+    "swagger",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
