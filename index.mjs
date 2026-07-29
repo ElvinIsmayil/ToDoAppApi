@@ -77,5 +77,25 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
+app.get('/tasks', (req, res)=>{
+    const done = req.query.done === "true";
+    const filteredTasks = tasks.filter(x=> x.done === done);
+    res.json(filteredTasks);
+})
+
+app.get('/tasks', (req,res) => {
+    const search = req.query.search;
+    const filteredTasks = tasks.filter(x=> x.title.includes(search));
+    res.json(filteredTasks);
+})
+
+app.get('/stats', (req,res)=>{
+    const total = tasks.length;
+    const done = tasks.filter(x=> x.done === true).length;
+    const open = total - done;
+
+    const response = {"total" : total, "done" : done, "open" : open};
+    res.json(response);
+})
 
 
