@@ -1,9 +1,34 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
+import Database from 'better-sqlite3';
 import openapiDocument from './openapi.json' with { type: 'json' };
 
 const app = express();
 const port = 3000;
+
+// Database initialization
+const db = new Database('tasks.db');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    done INTEGER NOT NULL DEFAULT 0
+  )
+`);
+
+// We retrieve the number of tasks using sql statement 
+const countStmt = db.prepare('SELECT COUNT(*) AS count FROM tasks');
+const { count } = countStmt.get();
+
+
+// Example taks which are inserted if the tasks table is empty in the db
+if (count === 0) {
+  const insertStmt = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
+  insertStmt.run('Buy groceries', 0);
+  insertStmt.run('Clean the desk', 0);
+  insertStmt.run('Complete Week 2 Assignment', 1);
+}
 
 app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
