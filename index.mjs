@@ -95,11 +95,15 @@ app.post('/tasks', (req,res)=> {
         return res.status(400).json({"error" : "The title is missing"});
     }
 
-    const taskId = tasks[tasks.length - 1].id + 1;
-    let task = {id : taskId, title: req.body.title, done: false};
-    
-    tasks.push(task);
-    res.status(201).json(task);
+    const stmt = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
+    const info = stmt.run(req.body.title, 0);
+
+    const newTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(info.lastInsertRowid);
+
+    res.status(201).json({
+        ...newTask,
+    done: Boolean(newTask.done)
+    });
 });
 
 app.put('/tasks/:id', (req,res) => {
