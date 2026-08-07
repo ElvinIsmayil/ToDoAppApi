@@ -53,7 +53,7 @@ app.get('/tasks' ,(req, res) => {
                 ...task,
                 done: Boolean(task.done)
             }));
-            res.json(tasks);
+           return res.json(tasks);
         }
         if(search){
             const getStmt = db.prepare('SELECT * FROM tasks WHERE title LIKE ?');
@@ -61,7 +61,7 @@ app.get('/tasks' ,(req, res) => {
                 ...task,
                 done: Boolean(task.done)
             }));
-             res.json(tasks);
+           return res.json(tasks);
         }
         else{
             const getStmt = db.prepare('SELECT * FROM tasks');
@@ -111,24 +111,42 @@ app.put('/tasks/:id', (req,res) => {
         return res.status(400).json({"error" : "The request is invalid"});
     }
     const taskId = parseInt(req.params.id,10);
-    const task = tasks.find(x=> x.id === taskId);
-    if(!task){
+    const existingTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId);
+
+    if(!existingTask){
         return res.status(404).json({"error" : "The task was not found"});
     }
-    task.title = req.body.title;
-    task.done = req.body.done;
-    res.json(task);
-})
+
+    const updatedTitle = req.body.title.trim();
+    const updatedDone = req.body.done ? 1 : 0;
+
+     const updateStmt = db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?');
+    updateStmt.run(updatedTitle, updatedDone, taskId);
+
+    const updatedTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId);
+
+    return res.json({
+    ...updatedTask,
+    done: Boolean(updatedTask.done) 
+  });
+});
+
 
 app.delete('/tasks/:id', (req,res) => {
     const taskId = parseInt(req.params.id,10);
-    let task = tasks.find(x=>x.id === taskId);
-    let index = tasks.findIndex(x=>x.id === taskId);
-    if(!task){
+    const existingTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId);
+
+    if(!existingTask){
         return res.status(404).json({"error" : "The task was not found"});
     }
-    tasks.splice(index,1);
-    res.status(204).send();
+
+    const deleteStmt = db.prepare('DELETE FROM tasks WHERE id = ?');
+    const result = deleteStmt.run(req.params.id);
+    if(result.changes == 0){
+       return res.status(404).json({"error" : "The task could not be deleted"});
+    }
+
+   return res.status(204).send();
 })
 
 app.get('/stats', (req,res)=>{
