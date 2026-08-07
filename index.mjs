@@ -33,11 +33,6 @@ if (count === 0) {
 app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
-let tasks = [
-  { id: 1, title: 'Learn Express essentials', done: true },
-  { id: 2, title: 'Build CRUD API assignment', done: false },
-  { id: 3, title: 'Publish repo to GitHub', done: false }
-];
 
 app.get('/', (req, res) => {
   res.send({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
@@ -48,29 +43,51 @@ app.get('/health' , (req,res) => {
 });
 
 app.get('/tasks' ,(req, res) => {
-     const done = req.query.done;
+        const done = req.query.done;
         const search = req.query.search;
 
         if(done !== undefined){
-            const filteredTasks = tasks.filter(x=> x.done === (done === "true"));
-            return res.json(filteredTasks);
+            const isDone = (done === 'true' || done === '1') ? 1 : 0;
+            const getStmt = db.prepare('SELECT * FROM tasks WHERE done = ?');
+            const tasks = getStmt.all(isDone).map(task => ({
+                ...task,
+                done: Boolean(task.done)
+            }));
+            res.json(tasks);
         }
         if(search){
-            const filteredTasks = tasks.filter(x=> x.title.includes(search));
-            return res.json(filteredTasks);
+            const getStmt = db.prepare('SELECT * FROM tasks WHERE title LIKE ?');
+            const tasks = getStmt.all(`%${search}%`).map(task => ({
+                ...task,
+                done: Boolean(task.done)
+            }));
+             res.json(tasks);
         }
-    res.json(tasks);
+        else{
+            const getStmt = db.prepare('SELECT * FROM tasks');
+            const tasks = getStmt.all().map(task => ({
+                    ...task,
+                    done: Boolean(task.done)
+                }));
+            return res.json(tasks);
+        }
 });
 
 
 app.get('/tasks/:id', (req,res) => {
     const taskId = parseInt(req.params.id, 10);
-    const task = tasks.find(x=> x.id === taskId);
-
+    const stmt = db.prepare('SELECT * FROM tasks WHERE id = ?');
+    const task = stmt.get(req.params.id);
     if(!task){
         return res.status(404).json({ "error": `Task ${taskId} not found` });
     }
-    res.json(task);
+
+   const formattedTask = {
+  ...task,
+  done: Boolean(task.done)
+};
+
+    res.json(formattedTask);
 })
 
 app.post('/tasks', (req,res)=> {
