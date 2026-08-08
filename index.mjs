@@ -150,8 +150,8 @@ app.delete('/tasks/:id', (req,res) => {
 })
 
 app.get('/stats', (req,res)=>{
-    const total = tasks.length;
-    const done = tasks.filter(x=> x.done === true).length;
+    const total = db.prepare('SELECT COUNT(*) AS total FROM tasks').get().total;
+    const done = db.prepare('SELECT COUNT(*) AS done FROM tasks WHERE done = ?').get(1).done;
     const open = total - done;
 
     const response = {"total" : total, "done" : done, "open" : open};
