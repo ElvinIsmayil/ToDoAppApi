@@ -64,7 +64,7 @@ app.get('/tasks' ,(req, res) => {
            return res.json(tasks);
         }
         else{
-            const getStmt = db.prepare('SELECT * FROM tasks');
+            const getStmt = db.prepare('SELECT * FROM tasks ORDER BY title COLLATE NOCASE ASC');
             const tasks = getStmt.all().map(task => ({
                     ...task,
                     done: Boolean(task.done)
